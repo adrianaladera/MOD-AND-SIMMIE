@@ -1,4 +1,4 @@
-using FiniteDifferences
+using FiniteDifferences, LinearAlgebra
 function newton(f, x0, ϵf, ϵΔx, ϵxrel, maxiter = 256)
     xₖ = x0
     k = 1
