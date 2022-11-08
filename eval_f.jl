@@ -18,9 +18,9 @@ function feval(x,p,u)
     f = zeros(N);
     
     # Derivative of position is velocity
-    f[1:6:end] = x[4:6:end]  # x axis
-    f[2:6:end] = x[5:6:end]  # y axis
-    f[3:6:end] = x[6:6:end]  # z axis
+    @view f[1:6:end] = x[4:6:end]  # x axis
+    @view f[2:6:end] = x[5:6:end]  # y axis
+    @view f[3:6:end] = x[6:6:end]  # z axis
     
     # Calculate -µ/|r|^3 for each node
     # Reshape x into 3 x N/3 and take every other col -> get just positions, not velocities
