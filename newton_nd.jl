@@ -32,7 +32,20 @@ function NewtonNd(evaluate_f, x0,p,u,errf,errDeltax,relDeltax,max_iter)
        converged = 0
        @printf("Newton did NOT converge! Maximum Number of Iterations reached\n")
     end
-   
-   
     return x
+end
+
+function newtonHCM(evaluate_f, x0,p,u,errf,errDeltax,relDeltax,max_iter; dq = 0.05)
+   x = x0
+   k = 1
+   H(x, p, u, q) = (1-q) * (x - x0) + q * evaluate_f(x, p, u)
+   xs = Vector{Float64}(undef, length(0:dq:1))
+   for q ∈ 0:dq:1
+      H2(x, p, u) = H(x, p, u, q)
+      x = NewtonNd(H2, x, p, u, errf, errDeltax, relDeltax, max_iter)
+      xs[k] = x
+      k += 1
+      println("\nx($q) = $x\n")
+   end
+   return x
 end

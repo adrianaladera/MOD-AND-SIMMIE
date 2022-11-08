@@ -26,7 +26,7 @@ function trapezoidal(f, x0, xn, y0, n)
         #ys[i + 1,:] = ys[i,:] + h * f(ys[i,:])
 
         # Instead:
-        ys[i+1,:] = NewtonNd(step, ys[i,:], ys[i,:], h, 1e-9, 1e-8, 1e-8, 10000)
+        ys[i+1,:] = newtonHCM(step, ys[i,:], ys[i,:], h, 1e-9, 1e-8, 1e-8, 10000)
         # (Initial guess for ys[i+1] is ys[i])
     end
     
