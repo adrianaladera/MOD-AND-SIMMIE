@@ -4,7 +4,7 @@ include("jac.jl")
 function NewtonNd(evaluate_f, x0,p,u,errf,errDeltax,relDeltax,max_iter)
     k = 1;   
     X = Float64[];
-    X = copy(x0);      
+    X = copy(x0);    
     f = evaluate_f(X[:,k], p, u);
     errf_k      = norm(f,Inf);
     errDeltax_k = Inf;

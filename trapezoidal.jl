@@ -24,10 +24,10 @@ function trapezoidal(f, x0, xn, y0, n)
         xs[i + 1] = xs[i] + h
         # For reference, this is what forward euler does at this step:
         #ys[i + 1,:] = ys[i,:] + h * f(ys[i,:])
-        
+
         # Instead:
-        ys[i+1,:] = NewtonNd(step, xs[i], xs[i], h, 1e-10, 1e-8, 1e-8, 100)
-        # (Initial guess for xs[i+1] is xs[i])
+        ys[i+1,:] = NewtonNd(step, ys[i,:], ys[i,:], h, 1e-9, 1e-8, 1e-8, 10000)
+        # (Initial guess for ys[i+1] is ys[i])
     end
     
     return ys
