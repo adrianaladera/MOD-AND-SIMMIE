@@ -26,7 +26,7 @@ function NewtonNd(evaluate_f, x0,p,u,errf,errDeltax,relDeltax,max_iter)
     if errf_k<=errf && errDeltax_k<=errDeltax && relDeltax_k<=relDeltax
        converged = 1
 #        if visualize
-          @printf("Newton converged in %d iterations\n", iterations)
+#          @printf("Newton converged in %d iterations\n", iterations)
 #        end
     else
        converged = 0
