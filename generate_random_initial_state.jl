@@ -31,13 +31,14 @@ function generate_random_initial_state(N, mean_a, stddev_a, mean_ecc, stddev_ecc
     tru_anom = 2 .* [atan(tru_anom_y[i], tru_anom_x[i]) for i in 1:N]
 
     # Position as defined in the orbital plane:
-    dist = a .* (ecc - 1 .* cos.(ecc_anom))
+    dist = a .* (1 - ecc .* cos.(ecc_anom))
     r_xi = dist .* cos.(tru_anom)
     r_yi = dist .* sin.(tru_anom)
     r_zi = zeros(N)
 
     # Velocity as defined in the orbital plane:
     velo = sqrt.(µ.*a) / dist
+    #velo = sqrt.(µ.*abs.(2 ./ dist - 1 ./ a))
     v_xi = velo .* (-sin.(ecc_anom))
     v_yi = velo .* (sqrt.(1 .- ecc.^2) .* cos.(ecc_anom))
     v_zi = zeros(N)

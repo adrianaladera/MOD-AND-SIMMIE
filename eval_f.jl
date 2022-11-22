@@ -11,8 +11,8 @@ function feval(x,p,u)
     # 3-vec of position followed by 3-vec of velocity for each node
     
     # Optionally modify the exponential decay constant (d) and force amplitude (k) here
-    d = 1000
-    k = 100
+    d = 0.0001
+    k = 0 #100
     
     N = length(x);
     f = zeros(N);
@@ -42,7 +42,7 @@ function feval(x,p,u)
                 # Vector of position from node i to note j
                 r_ij = x[1+idx_i:3+idx_i] - x[1+idx_j:3+idx_j]
                 dist = norm(r_ij)
-                f[4+idx_i:6+idx_i] += k*exp(-d*dist) * r_ij/dist   
+                f[4+idx_i:6+idx_i] += k*exp(-dist/d) * r_ij/dist   
             end
         end
     end
