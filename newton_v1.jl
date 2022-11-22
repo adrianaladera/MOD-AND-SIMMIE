@@ -1,4 +1,4 @@
-using FiniteDifferences, LinearAlgebra
+using ForwardDiff, LinearAlgebra
 function newton(f, x0, ϵf, ϵΔx, ϵxrel, maxiter = 256)
     xₖ = x0
     k = 1
@@ -8,7 +8,7 @@ function newton(f, x0, ϵf, ϵΔx, ϵxrel, maxiter = 256)
     relΔxₖ = Inf
     while k <= maxiter && (erryₖ > ϵf || errΔxₖ > ϵΔx || relΔxₖ > ϵxrel)
         println("iteration $k")
-        Jf = jacobian(central_fdm(5, 1), f, xₖ)[1]
+        Jf = ForwardDiff.jacobian(f, xₖ)[1]
         if length(Jf) == 1
             Jf = Jf[1]
         end
@@ -59,7 +59,7 @@ function newtonkeepxs(f, x0, ϵf, ϵΔx, ϵxrel, maxiter = 256)
     xs = x0
     while k <= maxiter && (erryₖ > ϵf || errΔxₖ > ϵΔx || relΔxₖ > ϵxrel)
         println("iteration $k")
-        Jf = jacobian(central_fdm(5, 1), f, xₖ)[1]
+        Jf = ForwardDiff.jacobian(f, xₖ)[1]
         if length(Jf) == 1
             Jf = Jf[1]
         end
