@@ -3,7 +3,7 @@ using LinearAlgebra, Distributions, Random, Rotations
 global const µ = 3.986e14  # m^3/s^2
 
 
-function generate_random_initial_state(N, mean_a, stddev_a, mean_ecc, stddev_ecc)
+function generate_random_initial_state(N, mean_a, stddev_a, mean_ecc, stddev_ecc, apply_rot=true)
     # Generate a state vector x0 corresponding to N nodes (objects).
 
     # Each object is randomly generated. The final distribution will have the specified
@@ -31,13 +31,13 @@ function generate_random_initial_state(N, mean_a, stddev_a, mean_ecc, stddev_ecc
     tru_anom = 2 .* [atan(tru_anom_y[i], tru_anom_x[i]) for i in 1:N]
 
     # Position as defined in the orbital plane:
-    dist = a .* (1 - ecc .* cos.(ecc_anom))
+    dist = a .* (1 .- ecc .* cos.(ecc_anom))
     r_xi = dist .* cos.(tru_anom)
     r_yi = dist .* sin.(tru_anom)
     r_zi = zeros(N)
 
     # Velocity as defined in the orbital plane:
-    velo = sqrt.(µ.*a) / dist
+    velo = sqrt.(µ.*a) ./ dist
     #velo = sqrt.(µ.*abs.(2 ./ dist - 1 ./ a))
     v_xi = velo .* (-sin.(ecc_anom))
     v_yi = velo .* (sqrt.(1 .- ecc.^2) .* cos.(ecc_anom))
@@ -46,17 +46,28 @@ function generate_random_initial_state(N, mean_a, stddev_a, mean_ecc, stddev_ecc
     # The code above calculated the shape of the orbits but not the orientation.
     # To get the orientation, apply a unique random rotation matrix to each object.
     rand_rotations = [rand(RotMatrix{3}) for i in 1:N]
-    r = vec(reduce(vcat,[[r_xi[i], r_yi[i], r_zi[i]]' * rand_rotations[i] for i in 1:N]))
-    v = vec(reduce(vcat,[[v_xi[i], v_yi[i], v_zi[i]]' * rand_rotations[i] for i in 1:N]))
+    r = vec(reduce(hcat,[rand_rotations[i] * [r_xi[i], r_yi[i], r_zi[i]] for i in 1:N]))
+    v = vec(reduce(hcat,[rand_rotations[i] * [v_xi[i], v_yi[i], v_zi[i]] for i in 1:N]))
 
     # Assemble the state vector from positions and velocities.
     x0 = zeros(N*6)
-    x0[1:6:end] .= r[1:3:end]
-    x0[2:6:end] .= r[2:3:end]
-    x0[3:6:end] .= r[3:3:end]
-    x0[4:6:end] .= v[1:3:end]
-    x0[5:6:end] .= v[2:3:end]
-    x0[6:6:end] .= v[3:3:end]
+    
+    # Don't apply the rotations -- for debugging only
+    if !apply_rot
+        x0[1:6:end] .= r_xi
+        x0[2:6:end] .= r_yi
+        x0[3:6:end] .= r_zi
+        x0[4:6:end] .= v_xi
+        x0[5:6:end] .= v_yi
+        x0[6:6:end] .= v_zi
+    else
+        x0[1:6:end] .= r[1:3:end]
+        x0[2:6:end] .= r[2:3:end]
+        x0[3:6:end] .= r[3:3:end]
+        x0[4:6:end] .= v[1:3:end]
+        x0[5:6:end] .= v[2:3:end]
+        x0[6:6:end] .= v[3:3:end]
+    end
 
     return x0
 end
