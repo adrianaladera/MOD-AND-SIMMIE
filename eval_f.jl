@@ -10,9 +10,10 @@ function feval(x,p,u)
     # r_1x, r_1y, r_1z, v_1x, v_1y, v_1z, r_2x, r_2y, ...
     # 3-vec of position followed by 3-vec of velocity for each node
     
-    # Optionally modify the exponential decay constant (d) and force amplitude (k) here
-    d = 0.0001
-    k = 0 #100
+    # Optionally modify the exponential decay constant (d) and maximum force amplitude (k) here
+    d = 25000  # O(1e4 - 1e5) seems to be decent?
+    k = 5  # Remember, gravity in LEO is ~ 9.8 m/s^2
+    # Can also set these as arrays and choose k[i], d[i] in the controller func call in the nested for loop below
     
     N = length(x);
     f = zeros(N);
@@ -35,18 +36,33 @@ function feval(x,p,u)
     for i in 1:floor(Int, N/6)  # For each node,
         for j in 1:floor(Int, N/6)  # Loop over each other node
            if i != j  # And add the contributions from the interactions between nodes
-                # Will update later with better function vectorization =) Julia is new
-                # (This also calculates each force twice, unnecessarily...)
                 idx_i = (i-1)*6
                 idx_j = (j-1)*6
                 # Vector of position from node i to note j
                 r_ij = x[1+idx_i:3+idx_i] - x[1+idx_j:3+idx_j]
-                dist = norm(r_ij)
-                f[4+idx_i:6+idx_i] += k*exp(-dist/d) * r_ij/dist   
+                
+                f[4+idx_i:6+idx_i] += sig_controller(k,d,r_ij)
             end
         end
     end
     return f
+end
+
+function exp_controller(k,d,r_ij)
+    # Original controller
+    return k*exp(-dist/d) * r_ij/norm(r_ij)
+end
+
+function sig_controller(k,d,r_ij)
+    # Exponential controller
+    return k/(1+exp(dist/d-5)) * r_ij/norm(r_ij)
+end
+
+function energy_controller(k,d,r,v)
+    # This one doesn't work as well maybe, but it conserves orbital energy
+    # r, v are x[1+idx_i:3+idx_i], x[4+idx_i:6+idx_i]
+    binormal = cross(r, v)
+    return k/(1+exp(dist/d-5)) * binormal/norm(binormal)
 end
 
 function energy(x)
