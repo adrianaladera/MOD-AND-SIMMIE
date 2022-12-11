@@ -41,7 +41,7 @@ function feval(x,p,u)
                 # Vector of position from node i to note j
                 r_ij = x[1+idx_i:3+idx_i] - x[1+idx_j:3+idx_j]
                 
-                f[4+idx_i:6+idx_i] += sig_controller(k,d,r_ij)
+                f[4+idx_i:6+idx_i] += tanh_controller(k,d,r_ij)
             end
         end
     end
@@ -50,19 +50,27 @@ end
 
 function exp_controller(k,d,r_ij)
     # Original controller
-    return k*exp(-dist/d) * r_ij/norm(r_ij)
+    dist = norm(r_ij)
+    return k*exp(-dist/d) * r_ij/dist
 end
 
 function sig_controller(k,d,r_ij)
     # Exponential controller
-    return k/(1+exp(dist/d-5)) * r_ij/norm(r_ij)
+    dist = norm(r_ij)
+    return k/(1+exp(dist/d-5)) * r_ij/dist
+end
+
+function tanh_controller(k,d,r_ij)
+    # Tanh controller
+    dist = norm(r_ij)
+    return (-k/2 * tanh(dist/d-5) + k/2) * r_ij/dist
 end
 
 function energy_controller(k,d,r,v)
     # This one doesn't work as well maybe, but it conserves orbital energy
     # r, v are x[1+idx_i:3+idx_i], x[4+idx_i:6+idx_i]
     binormal = cross(r, v)
-    return k/(1+exp(dist/d-5)) * binormal/norm(binormal)
+    return k/(1+exp(norm(r_ij)/d-5)) * binormal/norm(binormal)
 end
 
 function energy(x)
