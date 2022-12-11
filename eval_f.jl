@@ -5,44 +5,25 @@ global const µ = 3.986e14  # m^3/s^2
 # Helper function to take the column-wise norms of a matrix
 norm_col(A) = [norm(A[:,i]) for i=1:size(A,2)]
 
-function feval(x,p,u)
-    # Function eval with input x formatted as:
-    # r_1x, r_1y, r_1z, v_1x, v_1y, v_1z, r_2x, r_2y, ...
-    # 3-vec of position followed by 3-vec of velocity for each node
-    
-    # Optionally modify the exponential decay constant (d) and force amplitude (k) here
+function feval(x, p, u)
     d = 0.0001
-    k = 0 #100
+    k = 100 #100
     
     N = length(x);
-    f = zeros(N);
-    
-    # Derivative of position is velocity
-    f[1:6:end] = x[4:6:end]  # x axis
-    f[2:6:end] = x[5:6:end]  # y axis
-    f[3:6:end] = x[6:6:end]  # z axis
-    
-    # Calculate -µ/|r|^3 for each node
-    # Reshape x into 3 x N/3 and take every other col -> get just positions, not velocities
-    dists = norm_col(reshape(x, 3, floor(Int, N/3))[:,1:2:end])
-    grav_terms = -µ * dists.^-3
-    
-    # Set gravitational acceleration as r * (-µ/|r|^3)
-    f[4:6:end] = x[1:6:end].*grav_terms
-    f[5:6:end] = x[2:6:end].*grav_terms
-    f[6:6:end] = x[3:6:end].*grav_terms
-    
-    for i in 1:floor(Int, N/6)  # For each node,
-        for j in 1:floor(Int, N/6)  # Loop over each other node
-           if i != j  # And add the contributions from the interactions between nodes
-                # Will update later with better function vectorization =) Julia is new
-                # (This also calculates each force twice, unnecessarily...)
-                idx_i = (i-1)*6
-                idx_j = (j-1)*6
-                # Vector of position from node i to note j
-                r_ij = x[1+idx_i:3+idx_i] - x[1+idx_j:3+idx_j]
+    f = zeros(eltype(x), N);
+
+    Threads.@threads for i ∈ 1:6:N
+        @views f[i:(i+2)] .= x[(i+3):(i+5)] # derivative of position is velocity
+        positionsi = @view x[i:(i+2)]
+        gravterm = -μ * norm(positionsi) ^ -3
+        @views f[(i+3):(i+5)] .= positionsi .* gravterm
+        for j ∈ i:6:N
+            if i != j
+                positionsj = @view x[j:(j+2)]
+                r_ij = positionsi - positionsj
                 dist = norm(r_ij)
-                f[4+idx_i:6+idx_i] += k*exp(-dist/d) * r_ij/dist   
+                @view(f[(i+3):i+5]) .+= k * exp(-dist / d) * r_ij / dist
+                @view(f[(j+3):j+5]) .-= k * exp(-dist / d) * r_ij / dist
             end
         end
     end
