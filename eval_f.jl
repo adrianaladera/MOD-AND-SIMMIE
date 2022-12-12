@@ -16,32 +16,21 @@ function feval(x,p,u)
     # Can also set these as arrays and choose k[i], d[i] in the controller func call in the nested for loop below
     
     N = length(x);
-    f = zeros(N);
+    f = zeros(eltype(x), N);
     
-    # Derivative of position is velocity
-    f[1:6:end] = x[4:6:end]  # x axis
-    f[2:6:end] = x[5:6:end]  # y axis
-    f[3:6:end] = x[6:6:end]  # z axis
-    
-    # Calculate -µ/|r|^3 for each node
-    # Reshape x into 3 x N/3 and take every other col -> get just positions, not velocities
-    dists = norm_col(reshape(x, 3, floor(Int, N/3))[:,1:2:end])
-    grav_terms = -µ * dists.^-3
-    
-    # Set gravitational acceleration as r * (-µ/|r|^3)
-    f[4:6:end] = x[1:6:end].*grav_terms
-    f[5:6:end] = x[2:6:end].*grav_terms
-    f[6:6:end] = x[3:6:end].*grav_terms
-    
-    for i in 1:floor(Int, N/6)  # For each node,
-        for j in 1:floor(Int, N/6)  # Loop over each other node
-           if i != j  # And add the contributions from the interactions between nodes
-                idx_i = (i-1)*6
-                idx_j = (j-1)*6
-                # Vector of position from node i to note j
-                r_ij = x[1+idx_i:3+idx_i] - x[1+idx_j:3+idx_j]
-                
-                f[4+idx_i:6+idx_i] += tanh_controller(k,d,r_ij)
+    Threads.@threads for i ∈ 1:6:N
+        @views f[i:(i+2)] .= x[(i+3):(i+5)] # derivative of position is velocity
+        positionsi = @view x[i:(i+2)]
+        gravterm = -μ * norm(positionsi) ^ -3
+        @views f[(i+3):(i+5)] .= positionsi .* gravterm
+        for j ∈ i:6:N
+            if i != j
+                positionsj = @view x[j:(j+2)]
+                r_ij = positionsi - positionsj
+                dist = norm(r_ij)
+                accel = tanh_controller(k,d,r_ij)
+                @view(f[(i+3):i+5]) .+= accel
+                @view(f[(j+3):j+5]) .-= accel
             end
         end
     end
