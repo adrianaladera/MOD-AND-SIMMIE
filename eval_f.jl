@@ -28,7 +28,7 @@ function feval(x,p,u)
                 positionsj = @view x[j:(j+2)]
                 r_ij = positionsi - positionsj
                 dist = norm(r_ij)
-                accel = tanh_controller(k,d,r_ij)
+                accel = tanh_tol_controller(k,d,r_ij)
                 @view(f[(i+3):i+5]) .+= accel
                 @view(f[(j+3):j+5]) .-= accel
             end
@@ -53,6 +53,16 @@ function tanh_controller(k,d,r_ij)
     # Tanh controller
     dist = norm(r_ij)
     return (-k/2 * tanh(dist/d-5) + k/2) * r_ij/dist
+end
+
+function tanh_tol_controller(k,d,r_ij)
+    # Tanh controller, but below 1e-5 just returns 0
+    dist = norm(r_ij)
+    mag = (-k/2 * tanh(dist/d-5) + k/2)
+    if mag < 1e-5
+    	return [0,0,0]
+    end
+    return mag * r_ij/dist
 end
 
 function energy_controller(k,d,r,v)

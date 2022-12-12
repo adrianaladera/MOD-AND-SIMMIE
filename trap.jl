@@ -27,6 +27,8 @@ function newton(f::F, x, p, errf, errΔₓ, relΔₓ, itermax; Jf = zeros(length
         Jf = ForwardDiff.jacobian!(Jf, fₚ, x)
         # display(SparseMatrixCSC(Jf))
         Jsparse = SparseMatrixCSC(Jf)
+        Jsparse = droptol!(Jsparse,1e-5)
+        #println(nnz(Jsparse))
         Δₓ = Jsparse \ (-fₖ)
         x += Δₓ
         k += 1
@@ -35,5 +37,6 @@ function newton(f::F, x, p, errf, errΔₓ, relΔₓ, itermax; Jf = zeros(length
         errΔxₖ = norm(Δₓ, Inf)
         relΔxₖ = norm(Δₓ, Inf) / maximum(abs.(x))
     end
+    println("iter")
     return x, k-1, errfₖ ≤ errf && errΔxₖ ≤ errΔₓ && relΔxₖ ≤ relΔₓ
 end
