@@ -11,7 +11,7 @@ function feval(x,p,u)
     # 3-vec of position followed by 3-vec of velocity for each node
     
     # Optionally modify the exponential decay constant (d) and maximum force amplitude (k) here
-    d = 25000  # O(1e4 - 1e5) seems to be decent?
+    d = 20000  # O(1e4 - 1e5) seems to be decent?
     k = 5  # Remember, gravity in LEO is ~ 9.8 m/s^2
     # Can also set these as arrays and choose k[i], d[i] in the controller func call in the nested for loop below
     
@@ -22,7 +22,7 @@ function feval(x,p,u)
         @views f[i:(i+2)] .= x[(i+3):(i+5)] # derivative of position is velocity
         positionsi = @view x[i:(i+2)]
         gravterm = -μ * norm(positionsi) ^ -3
-        @views f[(i+3):(i+5)] .= positionsi .* gravterm
+        @views f[(i+3):(i+5)] .+= positionsi .* gravterm
         for j ∈ i:6:N
             if i != j
                 positionsj = @view x[j:(j+2)]
@@ -60,7 +60,7 @@ function tanh_tol_controller(k,d,r_ij)
     dist = norm(r_ij)
     mag = (-k/2 * tanh(dist/d-5) + k/2)
     if mag < 1e-5
-    	return [0,0,0]
+        return [0,0,0]
     end
     return mag * r_ij/dist
 end

@@ -37,6 +37,5 @@ function newton(f::F, x, p, errf, errΔₓ, relΔₓ, itermax; Jf = zeros(length
         errΔxₖ = norm(Δₓ, Inf)
         relΔxₖ = norm(Δₓ, Inf) / maximum(abs.(x))
     end
-    println("iter")
     return x, k-1, errfₖ ≤ errf && errΔxₖ ≤ errΔₓ && relΔxₖ ≤ relΔₓ
 end
