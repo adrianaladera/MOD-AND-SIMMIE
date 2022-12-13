@@ -28,7 +28,7 @@ for i in 1:orbits
     num_steps = 20000
     xs = euler(f, t0, ti, x0, num_steps)
     global x0 = xs[end,:]
-    writedlm("simulation_20000_$(N)objects_$(orbits)orbit_$(i).txt", Float32.(xs[1:40:end-1,:]))
+    writedlm("simulation_20000_n2_$(N)objects_$(orbits)orbit_$(i).txt", Float32.(xs[1:40:end-1,:]))
     println("completed orbit $(i)")
 end
 # before you run this, check that this isn't going to overwrite another file

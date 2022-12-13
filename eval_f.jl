@@ -29,8 +29,12 @@ function feval(x,p,u)
                 r_ij = positionsi - positionsj
                 dist = norm(r_ij)
                 accel = tanh_tol_controller(k,d,r_ij)
-                @view(f[(i+3):i+5]) .+= accel
-                @view(f[(j+3):j+5]) .-= accel
+                if i<N/2
+                    @view(f[(i+3):i+5]) .+= accel
+                end
+                if j<N/2
+                    @view(f[(j+3):j+5]) .-= accel
+                end
             end
         end
     end
