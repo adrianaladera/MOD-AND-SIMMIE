@@ -19,16 +19,17 @@ stddev_e = 0.1
 
 N = 1000
 
-x0 = generate_random_initial_state(N, mean_a, stddev_a, mean_e, stddev_e, true)
+#x0 = generate_random_initial_state(N, mean_a, stddev_a, mean_e, stddev_e, true)
+x0 = readdlm("simulation_20000_n2_1000objects_10orbit_5.txt")[end,:]
 
 orbits = 10
-for i in 1:orbits
+for i in 6:orbits
     t0 = 0
     ti = 8e3
     num_steps = 20000
     xs = euler(f, t0, ti, x0, num_steps)
     global x0 = xs[end,:]
-    writedlm("simulation_20000_n2_$(N)objects_$(orbits)orbit_$(i).txt", Float32.(xs[1:40:end-1,:]))
+    writedlm("simulation_20000__n2_$(N)objects_$(orbits)orbit_$(i).txt", Float32.(xs[1:40:end-1,:]))
     println("completed orbit $(i)")
 end
 # before you run this, check that this isn't going to overwrite another file
