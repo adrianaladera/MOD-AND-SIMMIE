@@ -16,8 +16,10 @@ function euler(f, x0, xn, y0, n)
     for i in 1:floor(Int,n)
         xs[i + 1] = xs[i] + h
         ys[i + 1,:] = ys[i,:] + h * f(ys[i,:])
-        if i%2000==0
-            println(i)
+        if i%Int(round(n/10))==0
+            print(i/n*100)
+            print("% done")
+            println("")
         end
     end
     
