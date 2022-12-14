@@ -1,3 +1,5 @@
+using LinearAlgebra, ForwardDiff, SparseArrays
+
 f̂(x, p::P) where P = 
     x - p[1] - p[2] / 2 * p[3](x, p[end]) - p[2] / 2 * p[3](p[1], p[end])
 function trapezoid(f::F, t₀, tₙ, x₀, p, n) where F
@@ -25,6 +27,8 @@ function newton(f::F, x, p, errf, errΔₓ, relΔₓ, itermax; Jf = zeros(length
         Jf = ForwardDiff.jacobian!(Jf, fₚ, x)
         # display(SparseMatrixCSC(Jf))
         Jsparse = SparseMatrixCSC(Jf)
+        Jsparse = droptol!(Jsparse,1e-5)
+        #println(nnz(Jsparse))
         Δₓ = Jsparse \ (-fₖ)
         x += Δₓ
         k += 1

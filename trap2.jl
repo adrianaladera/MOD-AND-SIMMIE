@@ -43,9 +43,7 @@ end
 
 """
     newton(f(x, p, t), x0, u, p, errf, errΔₓ, relΔₓ, itermax, Jf = nothing)
-
 Use Newton's Method to solve the nonlinear system f(x, p, t) = 0
-
 """
 function newton_finitediff(f::F, x, p, t, errf, errΔₓ, relΔₓ, itermax) where F
     k = 1
@@ -100,4 +98,3 @@ function newtonHCM(f::F, h::H, x0, p, t, errf, errΔₓ, relΔₓ; dq = 0.01) wh
     end
     return X[end], k, X, converged
 end
-
